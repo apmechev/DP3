@@ -97,6 +97,7 @@ namespace DP3 {
         itsNChan         (parset.getInt (prefix + "nchan", 1)),
         itsUVWFlagStep   (input, parset, prefix),
         itsCoreConstraint(parset.getDouble (prefix + "coreconstraint", 0.0)),
+        itsLeakageConstraint(parset.getBool (prefix + "leakageconstraint", false)),
         itsSmoothnessConstraint(parset.getDouble (prefix + "smoothnessconstraint", 0.0)),
         itsScreenCoreConstraint(parset.getDouble (prefix + "tecscreen.coreconstraint", 0.0)),
         itsFullMatrixMinimalization(false),
@@ -171,6 +172,10 @@ namespace DP3 {
       if(itsSmoothnessConstraint != 0.0) {
         itsConstraints.push_back(std::unique_ptr<Constraint>(
           new SmoothnessConstraint(itsSmoothnessConstraint))); 
+      }
+      if(itsLeakageConstraint) {
+        itsConstraints.push_back(std::unique_ptr<Constraint>(
+          new LeakageConstraint()));
       }
       switch(itsMode) {
         case GainCal::COMPLEXGAIN:

@@ -178,14 +178,15 @@ namespace DP3 {
       NSTimer          itsTimerSolve;
       NSTimer          itsTimerWrite;
       double           itsCoreConstraint;
+      bool itsLeakageConstraint;
       double           itsSmoothnessConstraint;
       double           itsScreenCoreConstraint;
       MultiDirSolver   itsMultiDirSolver;
       bool itsFullMatrixMinimalization;
       bool itsApproximateTEC;
-			bool itsSubtract;
+      bool itsSubtract;
       std::string itsStatFilename;
-			std::unique_ptr<ThreadPool> itsThreadPool;
+      std::unique_ptr<ThreadPool> itsThreadPool;
       std::unique_ptr<std::ofstream> itsStatStream;
     };
 

@@ -2,7 +2,7 @@
 
 std::vector<Constraint::Result> PhaseOnlyConstraint::Apply(
     std::vector<std::vector<dcomplex> >& solutions, double,
-    std::ostream* statStream)
+    std::ostream* /*statStream*/)
 {
   for (size_t ch=0; ch<solutions.size(); ++ch) {
     for (size_t solIndex=0; solIndex<solutions[ch].size(); ++solIndex) {
@@ -15,7 +15,7 @@ std::vector<Constraint::Result> PhaseOnlyConstraint::Apply(
 
 std::vector<Constraint::Result> AmplitudeOnlyConstraint::Apply(
     std::vector<std::vector<dcomplex> >& solutions, double,
-    std::ostream* statStream)
+    std::ostream* /*statStream*/)
 {
   for (size_t ch=0; ch<solutions.size(); ++ch) {
     for (size_t solIndex=0; solIndex<solutions[ch].size(); ++solIndex) {
@@ -28,7 +28,7 @@ std::vector<Constraint::Result> AmplitudeOnlyConstraint::Apply(
 
 std::vector<Constraint::Result> DiagonalConstraint::Apply(
     std::vector<std::vector<dcomplex> >& solutions, double,
-    std::ostream* statStream)
+    std::ostream* /*statStream*/)
 {
   if(_polsPerSolution == 4)
   {
@@ -45,7 +45,7 @@ std::vector<Constraint::Result> DiagonalConstraint::Apply(
 
 std::vector<Constraint::Result> CoreConstraint::Apply(
     std::vector<std::vector<dcomplex> >& solutions, double,
-    std::ostream* statStream)
+    std::ostream* /*statStream*/)
 {
   for (uint ch=0; ch<solutions.size(); ++ch) {
     std::vector<dcomplex> coreSolutions(_nDirections, 0.0);
@@ -67,6 +67,25 @@ std::vector<Constraint::Result> CoreConstraint::Apply(
       size_t startIndex = antennaIndex * _nDirections;
       for(size_t direction = 0; direction != _nDirections; ++direction)
         solutions[ch][startIndex + direction] = coreSolutions[direction];
+    }
+  }
+  return std::vector<Constraint::Result>();
+}
+
+std::vector<Constraint::Result> LeakageConstraint::Apply(
+    std::vector<std::vector<dcomplex>>& solutions, double /*time*/, std::ostream* /*statStream*/)
+{
+  const size_t nPol = solutions.front().size() / (_nAntennas*_nDirections);
+  if(nPol != 4)
+    throw std::runtime_error("Solving for leakage requires 4 polarizations");
+
+  for(std::vector<dcomplex>& chSolutions : solutions)
+  {
+    for(uint sol=0; sol!=_nAntennas*_nDirections; ++sol)
+    {
+      dcomplex* jonesMatrix = &chSolutions[sol*4];
+      jonesMatrix[0] = 1.0;
+      jonesMatrix[3] = 1.0;
     }
   }
   return std::vector<Constraint::Result>();
