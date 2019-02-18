@@ -12,7 +12,7 @@ target_link_libraries(DPPP
   ${CASACORE_LIBRARIES}
   ${LOFAR_STATION_RESPONSE_LIB}
   ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-  ${EXTRA_LIBRARIES})
+  ${EXTRA_LIBRARIES} /home/apmechev/GRIDTOOLS/papi/src/papi/lib/libpapi.a )
 
 install(TARGETS DPPP DESTINATION bin)
 

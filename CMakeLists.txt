@@ -127,9 +127,13 @@ add_library(DPPP_OBJ OBJECT
   DPPP/DummyStep.cc DPPP/H5ParmPredict.cc DPPP/GridInterpolate.cc DPPP/Upsample.cc
   DPPP/Split.cc
   DPPP/Interpolate.cc
-  ${LOFAR_DEPENDENT_FILES}
+  ${LOFAR_DEPENDENT_FILES} 
 )
 set(DPPP_OBJECT $<TARGET_OBJECTS:DPPP_OBJ>)
+
+#target_link_libraries(DPPP ${PAPI_INCLUDE_DIR}/papi/libpapi.a)
+
+#add_library(DPPP papi)
 
 #
 # Dependencies of AOFlagger
@@ -143,6 +147,9 @@ find_package(CFITSIO REQUIRED)
 find_library(AOFLAGGER_LIB aoflagger REQUIRED)
 find_path(AOFLAGGER_INCLUDE_DIR NAMES aoflagger.h)
 include_directories(${AOFLAGGER_INCLUDE_DIR})
+include_directories(${PAPI_INCLUDE_DIR})
+link_directories(${PAPI_INCLUDE_DIR}/papi) #Change this to /lib
+
 find_package(PkgConfig)
 pkg_check_modules(GTKMM gtkmm-3.0>=3.0.0)
 pkg_check_modules(SIGCXX sigc++-2.0)
@@ -181,6 +188,7 @@ endif()
 
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} ${ARMADILLO_LIBRARIES})
+
 add_library(DDECal_OBJ OBJECT
   DDECal/DDECal.cc DDECal/Register.cc DDECal/Stopwatch.cc
   DDECal/MultiDirSolver.cc
@@ -192,6 +200,7 @@ add_library(DDECal_OBJ OBJECT
 set(DDECAL_OBJECT $<TARGET_OBJECTS:DDECal_OBJ>)
 
 set(DPPP_GLOBAL_SOVERSION 2)
+
 
 add_subdirectory(DPPP)
 add_subdirectory(TestDynDPPP)
@@ -207,5 +216,7 @@ target_link_libraries(makesourcedb ${CASACORE_LIBRARIES} ${Boost_SYSTEM_LIBRARY}
 
 add_executable(showsourcedb ParmDB/showsourcedb.cc ${PARMDB_OBJECT} ${BLOB_OBJECT} ${COMMON_OBJECT})
 target_link_libraries(showsourcedb ${CASACORE_LIBRARIES} ${Boost_SYSTEM_LIBRARY})
+
+#target_link_libraries(DPPP /home/apmechev/GRIDTOOLS/papi/src/papi/libpapi.a)
 
 install (TARGETS makesourcedb showsourcedb DESTINATION bin) 

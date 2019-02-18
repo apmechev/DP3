@@ -28,11 +28,14 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <papi.h>
 
 // Define handler that tries to print a backtrace.
 //Exception::TerminateHandler t(Exception::terminate);
 
 void showUsage() {
+   int retval = PAPI_library_init(PAPI_VER_CURRENT);
+
   std::cout <<
     "Usage: DPPP [-v] [parsetfile] [parsetkeys...]\n"
     "  parsetfile: a file containing one parset key=value pair per line\n"
