@@ -147,7 +147,8 @@ find_package(CFITSIO REQUIRED)
 find_library(AOFLAGGER_LIB aoflagger REQUIRED)
 find_path(AOFLAGGER_INCLUDE_DIR NAMES aoflagger.h)
 include_directories(${AOFLAGGER_INCLUDE_DIR})
-include_directories(${PAPI_INCLUDE_DIR})
+include_directories($ENV{PAPI_INCLUDE_DIR})
+include_directories($ENV{PAPI_INCLUDE_DIR}/testlib/)
 link_directories(${PAPI_INCLUDE_DIR}/papi) #Change this to /lib
 
 find_package(PkgConfig)

@@ -58,6 +58,8 @@
 #include <limits>
 #include <iostream>
 #include <iomanip>
+#include <papi.h>
+
 
 using namespace casacore;
 using namespace DP3::BBS;

@@ -1,18 +1,22 @@
 include(PythonInstall)
 
+
+
 add_executable(DPPP DPPP.cc
   ${DPPP_OBJECT}
   ${PARMDB_OBJECT}
   ${BLOB_OBJECT}
   ${COMMON_OBJECT}
   ${AOFLAGGERSTEP_OBJECT}
-  ${DDECAL_OBJECT})
+  ${DDECAL_OBJECT}
+  )
 target_link_libraries(DPPP
   ${HDF5_LIBRARIES} ${HDF5_CXX_LIBRARIES}
   ${CASACORE_LIBRARIES}
   ${LOFAR_STATION_RESPONSE_LIB}
   ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-  ${EXTRA_LIBRARIES} /home/apmechev/GRIDTOOLS/papi/src/papi/lib/libpapi.a )
+  ${EXTRA_LIBRARIES} 
+  $ENV{PAPI_INCLUDE_DIR}/papi/lib/libpapi.a)
 
 install(TARGETS DPPP DESTINATION bin)
 
