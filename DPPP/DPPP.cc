@@ -40,6 +40,12 @@
 //Exception::TerminateHandler t(Exception::terminate);
 //#define NUM_EVENTS 1
 
+#define NUM_EVENTS 5
+#define ALL_EVENTS 6
+
+
+void print_PAPI_events(int *Events);
+
 void            
 test_fail( const char *file, int line, const char *call, int retval )
 {               
@@ -96,17 +102,28 @@ test_fail( const char *file, int line, const char *call, int retval )
 
 void showUsage() {
    int retval;
-   #define NUM_EVENTS 2
+//   #define NUM_EVENTS 5
+//   #define ALL_EVENTS 6
+   char code_name[PAPI_MAX_STR_LEN];
 
+   int all_events[ALL_EVENTS] = { PAPI_L1_DCM, PAPI_L2_TCM, PAPI_L2_ICM, PAPI_FP_INS, PAPI_TOT_INS, PAPI_TOT_CYC};
+   
    retval = PAPI_library_init(PAPI_VER_CURRENT);
-   int Events[NUM_EVENTS] = { PAPI_TOT_CYC, PAPI_TOT_INS };
+
+   for (int i=0;i<ALL_EVENTS;i++){
+       if (PAPI_query_event(all_events[i]) != PAPI_OK ){
+       PAPI_event_code_to_name(all_events[i], code_name);
+       std::cout<<"PAPI Event "<< code_name <<" cannot be accesssed and will not be used\n";}
+   }
+
+   int Events[NUM_EVENTS] = { PAPI_L1_DCM, PAPI_L2_TCM, PAPI_L2_ICM, PAPI_TOT_INS, PAPI_TOT_CYC };
    int num_hwcntrs = 0;
  
-
-   if ((num_hwcntrs = PAPI_num_counters()) != PAPI_OK){
-          std::cout<<PAPI_num_counters();
-           test_fail( __FILE__, __LINE__, "PAPI_num_counters", retval   );}
-   long_long values[NUM_EVENTS];
+   num_hwcntrs = PAPI_num_counters();
+//   if ((num_hwcntrs = PAPI_num_counters()) != PAPI_OK){
+//          std::cout<<PAPI_num_counters();
+//           test_fail( __FILE__, __LINE__, "PAPI_num_counters", retval   );}
+  
 
 
    if (num_hwcntrs>NUM_EVENTS) 
@@ -114,9 +131,12 @@ void showUsage() {
 
    
    retval = PAPI_start_counters(Events, num_hwcntrs);
-   std::cout<<retval;
+   std::cout<<"PAPI_start_counters_retval"<<retval<<"/n";
    if ( retval != PAPI_OK  )
         test_fail( __FILE__, __LINE__, "PAPI_start_counters", retval  );
+
+    print_PAPI_events(Events);
+
 
   std::cout<< "Instrumented with PAPI version: "<< PAPI_VER_CURRENT <<" \n";
   std::cout <<
@@ -131,11 +151,29 @@ void showUsage() {
     "Documentation is at:\n"
     "http://www.lofar.org/wiki/doku.php?id=public:user_software:documentation:ndppp\n";
 
-  retval = PAPI_read_counters( values, NUM_EVENTS  );
-  if ( retval != PAPI_OK  )
-     test_fail( __FILE__, __LINE__, "PAPI_read_counters", retval  );
+   print_PAPI_events(Events);
+   std::cout<<'\n';
 }
 
+void print_PAPI_events(int *Events){
+/*Prints out all the PAPI events in the events_set and their names*/
+   std::cout<<'\n';
+
+   long_long values[NUM_EVENTS];
+   char code_name[PAPI_MAX_STR_LEN];
+
+   int  retval = PAPI_read_counters( values, NUM_EVENTS  );
+   if ( retval != PAPI_OK  )
+     test_fail( __FILE__, __LINE__, "PAPI_read_counters", retval  );
+   for (int i=0; i<NUM_EVENTS; i++){
+      PAPI_event_code_to_name(Events[i], code_name);
+      std::cout<< code_name <<": " <<values[i]<<"\n";
+   }
+   std::cout<<'\n';
+ return;
+}
+
+   
 int main(int argc, char *argv[])
 {
   try
