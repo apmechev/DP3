@@ -103,8 +103,9 @@ void showUsage() {
    int num_hwcntrs = 0;
  
 
-   if ((num_hwcntrs = PAPI_num_counters()) != PAPI_OK)
-          test_fail( __FILE__, __LINE__, "PAPI_num_counters", retval   );
+   if ((num_hwcntrs = PAPI_num_counters()) != PAPI_OK){
+          std::cout<<PAPI_num_counters();
+           test_fail( __FILE__, __LINE__, "PAPI_num_counters", retval   );}
    long_long values[NUM_EVENTS];
 
 
@@ -113,6 +114,7 @@ void showUsage() {
 
    
    retval = PAPI_start_counters(Events, num_hwcntrs);
+   std::cout<<retval;
    if ( retval != PAPI_OK  )
         test_fail( __FILE__, __LINE__, "PAPI_start_counters", retval  );
 
