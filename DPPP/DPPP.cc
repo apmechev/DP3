@@ -30,6 +30,11 @@
 #include <stdexcept>
 #include <papi.h>
 
+#include <time.h>
+#include <stdint.h>
+
+#include <unistd.h>
+
 //#ifndef PAPI_TEST_H
 //#define PAPI_TEST_H
 //#include <papi_test.h>
@@ -40,11 +45,26 @@
 //Exception::TerminateHandler t(Exception::terminate);
 //#define NUM_EVENTS 1
 
-#define NUM_EVENTS 5
-#define ALL_EVENTS 6
+#define NUM_EVENTS 40
+#define ALL_EVENTS 102
 
 
 void print_PAPI_events(int *Events);
+
+
+void print_time(){
+   struct timespec tms;
+   if (clock_gettime(CLOCK_REALTIME,&tms)) {
+              return;}
+   int64_t micros = tms.tv_sec * 1000000;
+   micros += tms.tv_nsec/1000;
+   if (tms.tv_nsec % 1000 >= 500) {
+           ++micros;}
+
+   std::cout.precision(4);
+   std::cout<< micros <<'\n';
+   return;
+}
 
 void            
 test_fail( const char *file, int line, const char *call, int retval )
@@ -100,46 +120,43 @@ test_fail( const char *file, int line, const char *call, int retval )
 
 
 
-void showUsage() {
+void showUsage( ) {
    int retval;
-//   #define NUM_EVENTS 5
-//   #define ALL_EVENTS 6
    char code_name[PAPI_MAX_STR_LEN];
 
-   int all_events[ALL_EVENTS] = { PAPI_L1_DCM, PAPI_L2_TCM, PAPI_L2_ICM, PAPI_FP_INS, PAPI_TOT_INS, PAPI_TOT_CYC};
+   int all_events[ALL_EVENTS] = { PAPI_L1_DCM, PAPI_L1_ICM, PAPI_L2_DCM, PAPI_L2_ICM, PAPI_L3_DCM, PAPI_L3_ICM, PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM, PAPI_CA_SNP, PAPI_CA_SHR, PAPI_CA_CLN, PAPI_CA_INV, PAPI_CA_ITV, PAPI_L3_LDM, PAPI_L3_STM, PAPI_BRU_IDL, PAPI_FXU_IDL, PAPI_FPU_IDL, PAPI_LSU_IDL, PAPI_TLB_DM, PAPI_TLB_IM, PAPI_TLB_TL, PAPI_L1_LDM, PAPI_L1_STM, PAPI_L2_LDM, PAPI_L2_STM, PAPI_BTAC_M, PAPI_PRF_DM, PAPI_L3_DCH, PAPI_TLB_SD, PAPI_CSR_FAL, PAPI_CSR_SUC, PAPI_CSR_TOT, PAPI_MEM_SCY, PAPI_MEM_RCY, PAPI_MEM_WCY, PAPI_STL_ICY, PAPI_FUL_ICY, PAPI_STL_CCY, PAPI_FUL_CCY, PAPI_HW_INT, PAPI_BR_UCN, PAPI_BR_CN, PAPI_BR_TKN, PAPI_BR_NTK, PAPI_BR_MSP, PAPI_BR_PRC, PAPI_FMA_INS, PAPI_TOT_IIS, PAPI_TOT_INS, PAPI_INT_INS, PAPI_FP_INS, PAPI_LD_INS, PAPI_SR_INS, PAPI_BR_INS, PAPI_VEC_INS, PAPI_RES_STL, PAPI_FP_STAL, PAPI_TOT_CYC, PAPI_LST_INS, PAPI_SYC_INS, PAPI_L1_DCH, PAPI_L2_DCH, PAPI_L1_DCA, PAPI_L2_DCA, PAPI_L3_DCA, PAPI_L1_DCR, PAPI_L2_DCR, PAPI_L3_DCR, PAPI_L1_DCW, PAPI_L2_DCW, PAPI_L3_DCW, PAPI_L1_ICH, PAPI_L2_ICH, PAPI_L3_ICH, PAPI_L1_ICA, PAPI_L2_ICA, PAPI_L3_ICA, PAPI_L1_ICR, PAPI_L2_ICR, PAPI_L3_ICR, PAPI_L1_ICW, PAPI_L2_ICW, PAPI_L3_ICW, PAPI_L1_TCH, PAPI_L2_TCH, PAPI_L3_TCH, PAPI_L1_TCA, PAPI_L2_TCA, PAPI_L3_TCA, PAPI_L1_TCR, PAPI_L2_TCR, PAPI_L3_TCR, PAPI_L1_TCW, PAPI_L2_TCW, PAPI_L3_TCW, PAPI_FML_INS, PAPI_FAD_INS, PAPI_FDV_INS, PAPI_FSQ_INS, PAPI_FNV_INS };
    
    retval = PAPI_library_init(PAPI_VER_CURRENT);
+   vector<int> events_vec;
 
    for (int i=0;i<ALL_EVENTS;i++){
        if (PAPI_query_event(all_events[i]) != PAPI_OK ){
        PAPI_event_code_to_name(all_events[i], code_name);
        std::cout<<"PAPI Event "<< code_name <<" cannot be accesssed and will not be used\n";}
+       else {events_vec.push_back(all_events[i]);
+       }
    }
+   
 
-   int Events[NUM_EVENTS] = { PAPI_L1_DCM, PAPI_L2_TCM, PAPI_L2_ICM, PAPI_TOT_INS, PAPI_TOT_CYC };
+   int* Events = &events_vec[0];
    int num_hwcntrs = 0;
  
    num_hwcntrs = PAPI_num_counters();
-//   if ((num_hwcntrs = PAPI_num_counters()) != PAPI_OK){
-//          std::cout<<PAPI_num_counters();
-//           test_fail( __FILE__, __LINE__, "PAPI_num_counters", retval   );}
-  
-
-
    if (num_hwcntrs>NUM_EVENTS) 
        num_hwcntrs=NUM_EVENTS;
 
    
    retval = PAPI_start_counters(Events, num_hwcntrs);
-   std::cout<<"PAPI_start_counters_retval"<<retval<<"/n";
+   print_time();
+
+   std::cout<<"PAPI_start_counters_retval"<<retval<<"\n";
    if ( retval != PAPI_OK  )
         test_fail( __FILE__, __LINE__, "PAPI_start_counters", retval  );
 
-    print_PAPI_events(Events);
+   print_PAPI_events(Events);
 
-
-  std::cout<< "Instrumented with PAPI version: "<< PAPI_VER_CURRENT <<" \n";
-  std::cout <<
+   std::cout<< "Instrumented with PAPI version: "<< PAPI_VER_CURRENT <<" \n";
+   std::cout <<
     "Usage: DPPP [-v] [parsetfile] [parsetkeys...]\n"
     "  parsetfile: a file containing one parset key=value pair per line\n"
     "  parsetkeys: any number of parset key=value pairs, e.g. msin=my.MS\n\n"
@@ -153,16 +170,43 @@ void showUsage() {
 
    print_PAPI_events(Events);
    std::cout<<'\n';
+//   print_PAPI_events(Events);
+
 }
 
 void print_PAPI_events(int *Events){
 /*Prints out all the PAPI events in the events_set and their names*/
-   std::cout<<'\n';
 
    long_long values[NUM_EVENTS];
    char code_name[PAPI_MAX_STR_LEN];
 
-   int  retval = PAPI_read_counters( values, NUM_EVENTS  );
+   struct timespec tms1;
+   struct timespec tms;
+
+   if (clock_gettime(CLOCK_REALTIME,&tms1)) {
+           return;
+                          }
+   int retval = PAPI_read_counters( values, NUM_EVENTS  );
+
+   if (clock_gettime(CLOCK_REALTIME,&tms)) {
+           return;
+               }
+
+   int64_t micros = tms.tv_sec * 1000000;
+   micros += tms.tv_nsec/1000;
+   int64_t micros1 = tms1.tv_sec * 1000000;
+   micros1 += tms1.tv_nsec/1000;
+   if (tms.tv_nsec % 1000 >= 500) {
+           ++micros;
+               }
+
+   if (tms1.tv_nsec % 1000 >= 500) {
+              ++micros1;
+                             }
+
+   std::cout.precision(4);
+   std::cout<< int64_t (micros1 + (micros-micros1)/2) <<'\n';
+
    if ( retval != PAPI_OK  )
      test_fail( __FILE__, __LINE__, "PAPI_read_counters", retval  );
    for (int i=0; i<NUM_EVENTS; i++){
