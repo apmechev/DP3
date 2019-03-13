@@ -80,6 +80,7 @@ namespace DP3 {
 
     bool ResultStep::process (const DPBuffer& buf)
     {
+      std::cout<<"Starting process\n\n\n";
       itsBuffer = buf;
       getNextStep()->process (buf);
       return true;
@@ -87,6 +88,7 @@ namespace DP3 {
 
     void ResultStep::finish()
     {
+      std::cout<<"FINISHED!\n";
       getNextStep()->finish();
     }
 
@@ -115,6 +117,7 @@ namespace DP3 {
 
     void MultiResultStep::finish()
     {
+      std::cout<<"FINISHED MULTISTEP!\n";
       getNextStep()->finish();
     }
 
