@@ -81,7 +81,7 @@ void print_PAPI_events(int *Events){
    if (clock_gettime(CLOCK_REALTIME,&tms1)) {
            return;
                           }
-   int retval = PAPI_read_counters( values, NUM_EVENTS  );
+   int retval = PAPI_read_counters(values, NUM_EVENTS);
    if (clock_gettime(CLOCK_REALTIME,&tms)) {
            return;
                }
@@ -96,19 +96,19 @@ void print_PAPI_events(int *Events){
 
    if (tms1.tv_nsec % 1000 >= 500) {
               ++micros1;
-                             }
-
-   std::cout.precision(4);
+                             } 
+   //std::cout.precision(4);
    if ( retval != PAPI_OK  )
      test_fail( __FILE__, __LINE__, "PAPI_read_counters", retval  );
    for (int i=0; i<NUM_EVENTS; i++){
-      PAPI_event_code_to_name(Events[i], code_name);
-      std::cout<<  int64_t (micros1 + (micros-micros1)/2) <<": " << Events[i] << " = " <<values[i]<<"\n";
+//      PAPI_event_code_to_name(Events[i], code_name);
+      std::cout<<  int64_t (micros1 + (micros-micros1)/2) <<": Ev_" << i << " = " <<values[i]<<"\n";
    }
    std::cout<<'\n';
  return;
 }
-    void
+
+void
 test_fail( const char *file, int line, const char *call, int retval )
 {
 //function copied from papi_test.cc since linking is hard and CMake CHates me
@@ -143,50 +143,40 @@ test_fail( const char *file, int line, const char *call, int retval )
                    "or library versions. PAPI may still function perfectly on your \n"
                    "system without the particular feature being tested here.       \n");
 
-        /* NOTE: Because test_fail is called from thread functions,
-           calling PAPI_shutdown here could prevent some threads
-           from being able to free memory they have allocated.
-         */
         if ( PAPI_is_initialized(  ) ) {
                 PAPI_shutdown(  );
         }
 
-        /* This is stupid.  Threads are the rare case */
-        /* and in any case an exit() should clear everything out */
-        /* adding back the exit() call */
 
            exit(1);
        }
 
 
-   int* init_PAPI_events(){
+std::vector<int> init_PAPI_events(){
    int retval;
    char code_name[PAPI_MAX_STR_LEN];
 
-   int all_events[ALL_EVENTS] = { PAPI_L1_DCM, PAPI_L1_ICM, PAPI_L2_DCM, PAPI_L2_ICM, PAPI_L3_DCM, PAPI_L3_ICM, PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM, PAPI_CA_SNP, PAPI_CA_SHR, PAPI_CA_CLN, PAPI_CA_INV, PAPI_CA_ITV, PAPI_L3_LDM, PAPI_L3_STM, PAPI_BRU_IDL, PAPI_FXU_IDL, PAPI_FPU_IDL, PAPI_LSU_IDL, PAPI_TLB_DM, PAPI_TLB_IM, PAPI_TLB_TL, PAPI_L1_LDM, PAPI_L1_STM, PAPI_L2_LDM, PAPI_L2_STM, PAPI_BTAC_M, PAPI_PRF_DM, PAPI_L3_DCH, PAPI_TLB_SD, PAPI_CSR_FAL, PAPI_CSR_SUC, PAPI_CSR_TOT, PAPI_MEM_SCY, PAPI_MEM_RCY, PAPI_MEM_WCY, PAPI_STL_ICY, PAPI_FUL_ICY, PAPI_STL_CCY, PAPI_FUL_CCY, PAPI_HW_INT, PAPI_BR_UCN, PAPI_BR_CN, PAPI_BR_TKN, PAPI_BR_NTK, PAPI_BR_MSP, PAPI_BR_PRC, PAPI_FMA_INS, PAPI_TOT_IIS, PAPI_TOT_INS, PAPI_INT_INS, PAPI_FP_INS, PAPI_LD_INS, PAPI_SR_INS, PAPI_BR_INS, PAPI_VEC_INS, PAPI_RES_STL, PAPI_FP_STAL, PAPI_TOT_CYC, PAPI_LST_INS, PAPI_SYC_INS, PAPI_L1_DCH, PAPI_L2_DCH, PAPI_L1_DCA, PAPI_L2_DCA, PAPI_L3_DCA, PAPI_L1_DCR, PAPI_L2_DCR, PAPI_L3_DCR, PAPI_L1_DCW, PAPI_L2_DCW, PAPI_L3_DCW, PAPI_L1_ICH, PAPI_L2_ICH, PAPI_L3_ICH, PAPI_L1_ICA, PAPI_L2_ICA, PAPI_L3_ICA, PAPI_L1_ICR, PAPI_L2_ICR, PAPI_L3_ICR, PAPI_L1_ICW, PAPI_L2_ICW, PAPI_L3_ICW, PAPI_L1_TCH, PAPI_L2_TCH, PAPI_L3_TCH, PAPI_L1_TCA, PAPI_L2_TCA, PAPI_L3_TCA, PAPI_L1_TCR, PAPI_L2_TCR, PAPI_L3_TCR, PAPI_L1_TCW, PAPI_L2_TCW, PAPI_L3_TCW, PAPI_FML_INS, PAPI_FAD_INS, PAPI_FDV_INS, PAPI_FSQ_INS, PAPI_FNV_INS };
-
+   int all_events[ALL_EVENTS] =  {PAPI_L1_DCM, PAPI_L2_DCA, PAPI_L3_DCA};//{ PAPI_L1_DCM, PAPI_L1_ICM, PAPI_L2_DCM, PAPI_L2_ICM, PAPI_L3_DCM, PAPI_L3_ICM, PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM, PAPI_CA_SNP, PAPI_CA_SHR, PAPI_CA_CLN, PAPI_CA_INV, PAPI_CA_ITV, PAPI_L3_LDM, PAPI_L3_STM, PAPI_BRU_IDL, PAPI_FXU_IDL, PAPI_FPU_IDL, PAPI_LSU_IDL, PAPI_TLB_DM, PAPI_TLB_IM, PAPI_TLB_TL, PAPI_L1_LDM, PAPI_L1_STM, PAPI_L2_LDM, PAPI_L2_STM, PAPI_BTAC_M, PAPI_PRF_DM, PAPI_L3_DCH, PAPI_TLB_SD, PAPI_CSR_FAL, PAPI_CSR_SUC, PAPI_CSR_TOT, PAPI_MEM_SCY, PAPI_MEM_RCY, PAPI_MEM_WCY, PAPI_STL_ICY, PAPI_FUL_ICY, PAPI_STL_CCY, PAPI_FUL_CCY, PAPI_HW_INT, PAPI_BR_UCN, PAPI_BR_CN, PAPI_BR_TKN, PAPI_BR_NTK, PAPI_BR_MSP, PAPI_BR_PRC, PAPI_FMA_INS, PAPI_TOT_IIS, PAPI_TOT_INS, PAPI_INT_INS, PAPI_FP_INS, PAPI_LD_INS, PAPI_SR_INS, PAPI_BR_INS, PAPI_VEC_INS, PAPI_RES_STL, PAPI_FP_STAL, PAPI_TOT_CYC, PAPI_LST_INS, PAPI_SYC_INS, PAPI_L1_DCH, PAPI_L2_DCH, PAPI_L1_DCA, PAPI_L2_DCA, PAPI_L3_DCA, PAPI_L1_DCR, PAPI_L2_DCR, PAPI_L3_DCR, PAPI_L1_DCW, PAPI_L2_DCW, PAPI_L3_DCW, PAPI_L1_ICH, PAPI_L2_ICH, PAPI_L3_ICH, PAPI_L1_ICA, PAPI_L2_ICA, PAPI_L3_ICA, PAPI_L1_ICR, PAPI_L2_ICR, PAPI_L3_ICR, PAPI_L1_ICW, PAPI_L2_ICW, PAPI_L3_ICW, PAPI_L1_TCH, PAPI_L2_TCH, PAPI_L3_TCH, PAPI_L1_TCA, PAPI_L2_TCA, PAPI_L3_TCA, PAPI_L1_TCR, PAPI_L2_TCR, PAPI_L3_TCR, PAPI_L1_TCW, PAPI_L2_TCW, PAPI_L3_TCW, PAPI_FML_INS, PAPI_FAD_INS, PAPI_FDV_INS, PAPI_FSQ_INS, PAPI_FNV_INS };
+   std::cout.precision(4);          
    retval = PAPI_library_init(PAPI_VER_CURRENT);
-   std::vector<int> events_vec;
-
+   std::vector<int> event_vec;
    for (int i=0;i<ALL_EVENTS;i++){
        if (PAPI_query_event(all_events[i]) != PAPI_OK ){
        PAPI_event_code_to_name(all_events[i], code_name);
-       std::cout<<"PAPI Event "<< code_name <<" cannot be accesssed and will not be used\n";}
-       else {events_vec.push_back(all_events[i]);
+       std::cout<<"PAPI Event "<< code_name <<" cannot be accesssed and will not be used\n";
+       }
+       else {event_vec.push_back(all_events[i]);
        }
    }
 
-
-   int* Events = events_vec.data();//  &events_vec[0];
-   //int Events[100];
-   //std::copy(events_vec.begin(), events_vec.end(), Events);
+   
+   int* Events =  &event_vec[0];
    int num_hwcntrs = 0;
 
    num_hwcntrs = PAPI_num_counters();
-   if (num_hwcntrs>NUM_EVENTS)
-       num_hwcntrs=NUM_EVENTS;
-
-
+   if (num_hwcntrs>event_vec.size())
+       num_hwcntrs=event_vec.size();
+   std::cout << num_hwcntrs<<"\n";
    retval = PAPI_start_counters(Events, num_hwcntrs);
 
    std::cout<<"PAPI_start_counters_retval"<<retval<<"\n";
@@ -196,7 +186,7 @@ test_fail( const char *file, int line, const char *call, int retval )
    print_PAPI_events(Events);
    std::cout<< "Instrumented with PAPI version: "<< PAPI_VER_CURRENT <<" \n";
 
-   return Events;
+   return event_vec;
 }
 
 
@@ -269,9 +259,11 @@ test_fail( const char *file, int line, const char *call, int retval )
         DPLOG_WARN_STR ("Parameter checkparset should be an integer value");
         checkparset = parset.getBool ("checkparset") ? 1:0;
       }
-      
-      int* PAPI_Events = init_PAPI_events();
-
+//      std::vector<int> event_vec = init_PAPI_events();
+//      int* PAPI_Events = &event_vec[0];
+//      event_vec = new std::vector<int>;
+      int justAnInt=0;
+      int* PAPI_Events = &justAnInt;
       bool showcounts = parset.getBool ("showcounts", true);
 
       uint numThreads = parset.getInt("numthreads", ThreadPool::NCPUs());
@@ -317,8 +309,7 @@ test_fail( const char *file, int line, const char *call, int retval )
       DPLOG_INFO_STR ("Processing " << ntodo << " time slots ...");
       
 
-              print_PAPI_events(PAPI_Events);
-              printf("Address of x is %p\n", (void *)PAPI_Events);
+//              print_PAPI_events(PAPI_Events);
 
       {
         ProgressMeter* progress = 0;
@@ -329,19 +320,19 @@ test_fail( const char *file, int line, const char *call, int retval )
         }
         double ndone = 0;
         if (showProgress  &&  ntodo > 0) {
-          progress->update (ndone, true);
+          progress->update (ndone, PAPI_Events, true);
         }
         DPBuffer buf;
         while (firstStep->process (buf)) {
           ++ndone;
           if (showProgress  &&  ntodo > 0) {
-            progress->update (ndone, true);
+            progress->update (ndone, PAPI_Events, true);
           }
         }
         delete progress;
       }
       // Finish the processing.
-      print_PAPI_events(PAPI_Events);
+//      print_PAPI_events(PAPI_Events);
 
 
       DPLOG_INFO_STR ("Finishing processing ...");
@@ -407,7 +398,7 @@ test_fail( const char *file, int line, const char *call, int retval )
         std::vector<string> inNames = parset.getStringVector ("msin.name",
                                                          std::vector<string>());
         if (inNames.empty()) {
-          inNames = parset.getStringVector ("msin");
+          inNames = parset.getStringVector ("msin"); //Error happens here
         }
         if (inNames.size() == 0)
           throw Exception("No input MeasurementSets given");
