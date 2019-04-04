@@ -108,6 +108,8 @@ namespace DP3 {
       casacore::Cube<bool>          itsFullResFlags;
       double          itsFreqResolution;
       double          itsTimeResolution;
+      int*            itsPAPI_Events;
+      volatile bool            itsPAPI_Initialized;
       uint            itsNChanAvg;
       uint            itsNTimeAvg;
       uint            itsMinNPoint;

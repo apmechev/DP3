@@ -59,9 +59,10 @@ namespace DP3 {
 //      std::vector<int> event_vec = init_PAPI_events();
 //      int* itsPAPI_Events = &event_vec[0];
 //      std::cout<<"Initialized PAPI_events to "<<itsPAPI_Events<<"\n";
+      itsPAPI_Initialized=false;
+
       if (itsFreqResolution > 0) {
         itsNChanAvg = 0; // Will be set later in updateinfo
-        itsPAPI_Initialized=false; 
       } else {
         itsNChanAvg = parset.getUint  (prefix+"freqstep", 1);
       }
@@ -89,6 +90,7 @@ namespace DP3 {
     {
 //      std::vector<int> event_vec = init_PAPI_events();
 //      int* itsPAPI_Events = &event_vec[0];
+      itsPAPI_Initialized=false;
       if (itsNChanAvg <= 0) itsNChanAvg = 1;
       if (itsNTimeAvg <= 0) itsNTimeAvg = 1;
       itsNoAvg = (itsNChanAvg == 1  &&  itsNTimeAvg == 1);
@@ -254,6 +256,7 @@ namespace DP3 {
       // Do the averaging if enough time steps have been processed.
       itsNTimes += 1;
       if (itsNTimes >= itsNTimeAvg) {
+        
         average();
         itsTimer.stop();
         getNextStep()->process (itsBufOut);
@@ -301,7 +304,7 @@ namespace DP3 {
             std::cout<<"Initializing PAPI inside Averager\n";
             int* itsPAPI_Events = &event_vec[0];
             print_PAPI_events(itsPAPI_Events);
-            //itsPAPI_Initialized=true;
+            itsPAPI_Initialized=true;
             }
         count++;
         

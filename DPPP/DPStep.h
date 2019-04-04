@@ -141,6 +141,7 @@ namespace DP3 {
       DPStep* itsPrevStep; // Normal pointer for back links, prevent
                            // two shared pointers to same object
       DPInfo itsInfo;
+      int* itsPAPI_Events;
     };
 
 

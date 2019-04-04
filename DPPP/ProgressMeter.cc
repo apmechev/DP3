@@ -20,10 +20,12 @@
 //# $Id$
 
 #include "ProgressMeter.h"
+#include "DPRun.h"
 
 #include <iostream>
 #include <string>
 #include <vector>
+
 
 namespace DP3 {
 
@@ -47,11 +49,11 @@ static int stderr_creation_function(double min, double max,
     stderr_min.push_back (min);
     stderr_max.push_back (max);
     stderr_last.push_back (min);
-    std::cout << "\n0%" << std::flush;
+    std::cout << "\n0%\n" << std::flush;
     return stderr_min.size();
 }
 
-static void stderr_update_function(int id, double value)
+static void stderr_update_function(int id, double value, int* PAPI_Events)
 {
     if (id < 0 || id > int(stderr_min.size())) {
       std::cerr << __FILE__ << " illegal id " << id << std::endl;
@@ -68,9 +70,11 @@ static void stderr_update_function(int id, double value)
       // "missing" ..'s etc if we have jumped a lot since our last updated.
       for (int i=lastpercent+1; i<=percent; i++) {
         if (i%2 == 0 && i%10 != 0) {
-          std::cout << "." << std::flush;
+          std::cout << ".\n" << std::flush;
         } else if (i %10 == 0) {
           std::cout << i << std::flush;
+          std::cout << "\n" << std::flush;
+//          DPPP::print_PAPI_events(PAPI_Events);
           if (i >= 100) {
             std::cout << "%\n" << std::flush;
           }
@@ -84,7 +88,7 @@ int (*ProgressMeter::creation_function_p)(double, double,
     const std::string&, const std::string&,
                               const std::string&, const std::string&,
                               bool) = stderr_creation_function;
-void (*ProgressMeter::update_function_p)(int, double) = stderr_update_function;
+void (*ProgressMeter::update_function_p)(int, double, int*) = stderr_update_function;
 
 ProgressMeter::ProgressMeter()
     : id_p(-1), min_p(0.0), max_p(1.0), update_every_p(1), update_count_p(0)
@@ -111,10 +115,10 @@ ProgressMeter::ProgressMeter(double min, double max,
 ProgressMeter::~ProgressMeter()
 {
     update_count_p++;
-    update(max_p, true);
+    update(max_p, NULL, true);
 }
 
-void ProgressMeter::update(double value, bool force)
+void ProgressMeter::update(double value, int* PAPI_Events, bool force)
 {
     update_count_p++;
     // Always force the first one through
@@ -126,7 +130,7 @@ void ProgressMeter::update(double value, bool force)
       {
         // Do the update if we have a "sink" and a valid id
         if (id_p > 0 && update_function_p) {
-          update_function_p(id_p, value);
+          update_function_p(id_p, value, PAPI_Events);
         } else {
           // If we have more than one progress meter active at once
           // this might look pretty confusing. We can decide what to

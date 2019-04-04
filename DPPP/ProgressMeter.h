@@ -83,7 +83,7 @@ public:
     // is set to 1 for you.
     ProgressMeter(double min, double max, 
         const std::string& title, const std::string& subtitle,
-        const std::string& minlabel, const std::string& maxlabel,
+        const std::string& minlabel, const std::string& maxlabel, 
         bool estimateTime=true, int updateEvery=1);
 
     // The destruction of the meter will cause an update to be sent with the
@@ -92,7 +92,7 @@ public:
     // as the calculation it is tracking.
     ~ProgressMeter();
 
-    void update(double value, bool force=false);
+    void update(double value, int* PAPI_Events, bool force=false);
 
     // Get the min and max values of the progress meter.
     // <group>
@@ -114,7 +114,7 @@ private:
                                       const std::string&, const std::string&,
                                       const std::string&, const std::string&,
                                       bool);
-    static void (*update_function_p)(int, double);
+    static void (*update_function_p)(int, double, int*);
 
     // Undefined and inaccessible
     ProgressMeter(const ProgressMeter&);

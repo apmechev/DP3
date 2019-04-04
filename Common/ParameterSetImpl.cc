@@ -359,7 +359,7 @@ ParameterSetImpl::findKV(const std::string& aKey, bool doThrow) const
 		throw APSException(formatString("Key %s unknown", aKey.c_str()));
           }
         } else {
-          itsAskedParms.insert (aKey);          \
+          itsAskedParms.insert (aKey);           //bad things happen here
 	}
 
 	return (iter);
