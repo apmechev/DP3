@@ -24,6 +24,8 @@
 #include "Averager.h"
 #include "DPBuffer.h"
 #include "DPInfo.h"
+#include "DPRun.h"
+
 
 #include "../Common/ParallelFor.h"
 #include "../Common/ParameterSet.h"
@@ -49,13 +51,17 @@ namespace DP3 {
         itsMinPerc   (parset.getFloat (prefix+"minperc", 0.) / 100.),
         itsNTimes    (0),
         itsTimeInterval (0),
-        itsNoAvg (true)
+        itsNoAvg (true) 
     {
       string freqResolutionStr = parset.getString(prefix+"freqresolution","0");
       itsFreqResolution = getFreqHz(freqResolutionStr);
 
+//      std::vector<int> event_vec = init_PAPI_events();
+//      int* itsPAPI_Events = &event_vec[0];
+//      std::cout<<"Initialized PAPI_events to "<<itsPAPI_Events<<"\n";
       if (itsFreqResolution > 0) {
         itsNChanAvg = 0; // Will be set later in updateinfo
+        itsPAPI_Initialized=false; 
       } else {
         itsNChanAvg = parset.getUint  (prefix+"freqstep", 1);
       }
@@ -81,6 +87,8 @@ namespace DP3 {
         itsNTimes    (0),
         itsTimeInterval (0)
     {
+//      std::vector<int> event_vec = init_PAPI_events();
+//      int* itsPAPI_Events = &event_vec[0];
       if (itsNChanAvg <= 0) itsNChanAvg = 1;
       if (itsNTimeAvg <= 0) itsNTimeAvg = 1;
       itsNoAvg = (itsNChanAvg == 1  &&  itsNTimeAvg == 1);
@@ -152,9 +160,10 @@ namespace DP3 {
         getNextStep()->process (buf);
         return true;
       }
-      itsTimer.start();
+      itsTimer.start(); 
       // Sum the data in time applying the weights.
       // The summing in channel and the averaging is done in function average.
+
       if (itsNTimes == 0) {
         // The first time we assign because that is faster than first clearing
         // and adding thereafter.
@@ -271,6 +280,7 @@ namespace DP3 {
 
     void Averager::average()
     {
+      std::vector<int> event_vec;
       IPosition shp = itsBuf.getData().shape();
       uint nchanin = shp[1];
       uint npin = shp[0] * nchanin;
@@ -283,7 +293,18 @@ namespace DP3 {
       uint  nbl   = shp[2];
       uint npout = ncorr * nchan;
       ParallelFor<uint> loop(getInfo().nThreads());
+      int count=0; 
+//      std::cout << "Number of threads: "<<getInfo().nThreads()<<"\n";
       loop.Run(0, nbl, [&](uint k, size_t /*thread*/) {
+        if(!itsPAPI_Initialized){
+            std::vector<int> event_vec = init_PAPI_events();
+            std::cout<<"Initializing PAPI inside Averager\n";
+            int* itsPAPI_Events = &event_vec[0];
+            print_PAPI_events(itsPAPI_Events);
+            //itsPAPI_Initialized=true;
+            }
+        count++;
+        
         const Complex* indata = itsBuf.getData().data() + k*npin;
         const Complex* inalld = itsAvgAll.data() + k*npin;
         const float* inwght = itsBuf.getWeights().data() + k*npin;
@@ -291,8 +312,17 @@ namespace DP3 {
         const int* innp = itsNPoints.data() + k*npin;
         Complex* outdata = itsBufOut.getData().data() + k*npout;
         float* outwght = itsBufOut.getWeights().data() + k*npout;
+        if (count%1000 ==0)
+           print_PAPI_events(itsPAPI_Events);
         bool* outflags = itsBufOut.getFlags().data() + k*npout;
         for (uint i=0; i<ncorr; ++i) {
+//            std::cout<<itsPAPI_Events<<'\n';
+//          print_PAPI_events(itsPAPI_Events);
+//          std::cout<<"^";
+//          std::vector<int> event_vec = init_PAPI_events();
+//          int* PAPI_Events = &event_vec[0];
+//          print_PAPI_events(PAPI_Events);
+
           uint inxi = i;
           uint inxo = i;
           for (uint ch=0; ch<nchan; ++ch) {
@@ -323,7 +353,10 @@ namespace DP3 {
             }
             inxo += ncorr;
           }
-        }
+        };
+        int len_counters = event_vec.size();
+        long long int* PAPI_Final_Events;
+        PAPI_stop_counters(PAPI_Final_Events,len_counters);
       });
       // Set the remaining values in the output buffer.
       itsBufOut.setTime     (itsBuf.getTime());
